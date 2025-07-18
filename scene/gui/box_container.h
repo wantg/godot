@@ -94,6 +94,8 @@ public:
 
 	VBoxContainer() :
 			BoxContainer(true) { is_fixed = true; }
+
+	void set_fixed(bool fixed) { is_fixed = fixed; }
 };
 
 VARIANT_ENUM_CAST(BoxContainer::AlignmentMode);
