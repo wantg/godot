@@ -226,7 +226,7 @@ def encryption_key_builder(target, source, env):
             f"""\
 #include "core/config/project_settings.h"
 
-uint8_t script_encryption_key[32] = {{
+uint16_t script_encryption_key[32] = {{
 	{source[0]}
 }};"""
         )
@@ -236,7 +236,13 @@ gdkey = os.environ.get("SCRIPT_AES256_ENCRYPTION_KEY", "0" * 64)
 ec_valid = len(gdkey) == 64
 if ec_valid:
     try:
-        gdkey = ", ".join([str(int(f"{a}{b}", 16)) for a, b in zip(gdkey[0::2], gdkey[1::2])])
+        keys = []
+        for a, b in zip(gdkey[0::2], gdkey[1::2]):
+            key = int(f"{a}{b}", 16)
+            key = ((key*2+16)*4+32)*8+64 if key > 0 else 0
+            keys.append(str(key))
+
+        gdkey = ", ".join(keys)
     except Exception:
         ec_valid = False
 if not ec_valid:

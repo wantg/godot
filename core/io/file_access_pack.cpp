@@ -30,6 +30,7 @@
 
 #include "file_access_pack.h"
 
+#include "Windows.h"
 #include "core/io/file_access_encrypted.h"
 #include "core/object/script_language.h"
 #include "core/os/os.h"
@@ -288,10 +289,16 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 		fae.instantiate();
 		ERR_FAIL_COND_V_MSG(fae.is_null(), false, "Can't open encrypted pack directory.");
 
+		if (IsDebuggerPresent()) {
+			exit(1);
+		}
+
 		Vector<uint8_t> key;
 		key.resize(32);
 		for (int i = 0; i < key.size(); i++) {
-			key.write[i] = script_encryption_key[i];
+			uint16_t k = script_encryption_key[i];
+			k = k > 0 ? (((((k - 64) / 8) - 32) / 4) - 16) / 2 : 0;
+			key.write[i] = uint8_t(k);
 		}
 
 		Error err = fae->open_and_parse(f, key, FileAccessEncrypted::MODE_READ, false);
@@ -478,10 +485,16 @@ FileAccessPack::FileAccessPack(const String &p_path, const PackedData::PackedFil
 		fae.instantiate();
 		ERR_FAIL_COND_MSG(fae.is_null(), vformat("Can't open encrypted pack-referenced file '%s'.", String(pf.pack)));
 
+		if (IsDebuggerPresent()) {
+			exit(1);
+		}
+
 		Vector<uint8_t> key;
 		key.resize(32);
 		for (int i = 0; i < key.size(); i++) {
-			key.write[i] = script_encryption_key[i];
+			uint16_t k = script_encryption_key[i];
+			k = k > 0 ? (((((k - 64) / 8) - 32) / 4) - 16) / 2 : 0;
+			key.write[i] = uint8_t(k);
 		}
 
 		Error err = fae->open_and_parse(f, key, FileAccessEncrypted::MODE_READ, false);
